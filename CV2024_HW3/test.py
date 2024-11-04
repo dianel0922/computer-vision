@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
+import random
 
 def ratio_distance(descriptor1, descriptor2):
     # 計算自定義的 ratio distance
@@ -52,14 +52,70 @@ def detect_and_match_features(img1, img2, feature='SIFT'):
     return keypoints1, keypoints2, good_matches
 
 def ransac_homography(keypoints1, keypoints2, good_matches, threshold=5.0, max_iters=1000):
-    pts1 = np.float32([keypoints1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-    pts2 = np.float32([keypoints2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+    # pts1 = np.float32([keypoints1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+    # pts2 = np.float32([keypoints2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+    # H, mask = cv2.findHomography(pts1, pts2, cv2.RANSAC, threshold, maxIters=max_iters)
+    # inliers = mask.ravel().tolist()
 
-    H, mask = cv2.findHomography(pts1, pts2, cv2.RANSAC, threshold, maxIters=max_iters)
+    def sample_correspondences(matches, keypoints1, keypoints2, S=4):
+        sampled_matches = random.sample(matches, S)
+        pts1 = np.float32([keypoints1[m.queryIdx].pt for m in sampled_matches])
+        pts2 = np.float32([keypoints2[m.trainIdx].pt for m in sampled_matches])
+        return pts1, pts2
+    
+    def compute_homography(pts1, pts2):
+        A = []
+        for i in range(4):
+            X, Y = pts1[i][0], pts1[i][1]
+            u, v = pts2[i][0], pts2[i][1]
+            A.append([-X, -Y, -1, 0, 0, 0, X * u, Y * u, u])
+            A.append([0, 0, 0, -X, -Y, -1, X * v, Y * v, v])    
 
-    inliers = mask.ravel().tolist()
+        A = np.array(A)
+        _, _, Vt = np.linalg.svd(A)
+        H = Vt[-1].reshape(3, 3)
+        return H / H[2,2]
 
-    return H, inliers
+    def count_inliers(H, keypoints1, keypoints2, matches, threshold=5.0):
+        inliers = 0
+        for match in matches:
+            pt1 = np.array([*keypoints1[match.queryIdx].pt, 1.0])
+            pt2 = np.array([*keypoints2[match.trainIdx].pt, 1.0])
+            
+            projected_pt1 = H @ pt1
+            projected_pt1 /= projected_pt1[2]  
+            print("error:")
+            print(projected_pt1[:2])
+            print(pt2[:2])
+            error = np.linalg.norm(projected_pt1[:2] - pt2[:2])
+            if error < threshold:
+                inliers += 1
+        return inliers
+    
+    # IV. iterate for N times
+    def ransac_homography(matches, keypoints1, keypoints2, threshold=5.0, max_iters=1000):
+        best_H = None
+        max_inliers = 0
+
+        for _ in range(max_iters):
+            pts1, pts2 = sample_correspondences(matches, keypoints1, keypoints2)
+            H = compute_homography(pts1, pts2)
+            
+            inliers = count_inliers(H, keypoints1, keypoints2, matches, threshold)
+            
+            if inliers > max_inliers:
+                max_inliers = inliers
+                best_H = H
+
+        return best_H
+
+    # V. get the best homography matrix with smallest number of outliers
+   
+    return ransac_homography(good_matches, keypoints1, keypoints2, threshold=5.0, max_iters=1000)
+    
+    
+     
+
 
 def warp_and_stitch(img1, img2, H):
     h2, w2 = img2.shape[:2]
@@ -81,8 +137,8 @@ def warp_and_stitch(img1, img2, H):
 
 
 
-img1 = cv2.imread('data/TV1.jpg', cv2.COLOR_BGR2RGB)
-img2 = cv2.imread('data/TV2.jpg', cv2.COLOR_BGR2RGB)
+img1 = cv2.imread('data/hill1.jpg', cv2.COLOR_BGR2RGB)
+img2 = cv2.imread('data/hill2.jpg', cv2.COLOR_BGR2RGB)
 
 features = ['SIFT', 'MSER']
 # step 1,2
@@ -90,7 +146,7 @@ keypoints1, keypoints2, good_matches = detect_and_match_features(img1, img2, fea
 
 
 # step3
-H, inliers = ransac_homography(keypoints1, keypoints2, good_matches)
+H = ransac_homography(keypoints1, keypoints2, good_matches)
 print("最佳單應矩陣 H：")
 print(H)
 
