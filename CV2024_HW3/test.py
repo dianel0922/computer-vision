@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+from tqdm import tqdm
 
 def ratio_distance(descriptor1, descriptor2):
     # 計算自定義的 ratio distance
@@ -9,19 +10,29 @@ def ratio_distance(descriptor1, descriptor2):
 
 def match(descriptors1, descriptors2):
     matches = []
-    for i, desc1 in enumerate(descriptors1):
+    tmp = []
+    for li in enumerate(descriptors1):
+        tmp.append(li)
+    feature_size = li[0]
+    print('start matching feature...')
+    for bar, (i, desc1) in zip(tqdm(range(1, feature_size)), enumerate(descriptors1)):
         distances = np.array([ratio_distance(desc1, desc2) for desc2 in descriptors2])
         sorted_indices = np.argsort(distances)[:2]
         matches.append([cv2.DMatch(_queryIdx=i, _trainIdx=idx, _imgIdx=0, _distance=distances[idx]) for idx in sorted_indices])
+        
     return matches
 
 def detect_and_match_features(img1, img2, feature='SIFT'):
 
     # step 1
     if feature == "SIFT":
+        print("start run SIFT")
         detector = cv2.SIFT_create()
+        print("processing image1")
         keypoints1, descriptors1 = detector.detectAndCompute(img1, None)
+        print("processing image2")
         keypoints2, descriptors2 = detector.detectAndCompute(img2, None)
+        print("SIFT complete")
     elif feature=='MSER':
         mser = cv2.MSER_create(min_area=20, max_area=14400)
         keypoints1 = mser.detect(img1)
@@ -179,4 +190,4 @@ plt.imshow(result, cmap='gray')
 plt.axis('off')
 plt.title("Panoramic Stitching Result")
 plt.show()
-plt.imsave('out.jpg', result)
+plt.imsave('myout1.jpg', result)
