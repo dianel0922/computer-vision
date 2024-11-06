@@ -189,7 +189,7 @@ img1 = cv2.imread('data/'+ img_name +'1.jpg', cv2.COLOR_RGB2BGR)
 img2 = cv2.imread('data/'+ img_name +'2.jpg', cv2.COLOR_RGB2BGR)
 
 features = ['SIFT', 'MSER']
-feature = features[1]
+feature = features[0]
 # step 1,2
 keypoints1, keypoints2, good_matches = detect_and_match_features(img1, img2, feature)
 
