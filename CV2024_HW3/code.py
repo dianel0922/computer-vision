@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import random
 from tqdm import tqdm
 
-img_name = 'mydata' #global call file name
+img_name = 'hill' #global call file name
 
 def ratio_distance(descriptor1, descriptor2):
     return np.linalg.norm(descriptor1 - descriptor2) / (np.linalg.norm(descriptor1) + np.linalg.norm(descriptor2) + 1e-10)
@@ -208,4 +208,4 @@ plt.imshow(result, cmap='gray')
 plt.axis('off')
 plt.title("Panoramic Stitching Result")
 plt.show()
-plt.imsave('out/' + feature + '_'+ img_name +'_result.jpg', result)
+plt.imsave('output/' + feature + '_'+ img_name +'_result.jpg', result)
