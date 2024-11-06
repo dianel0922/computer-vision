@@ -7,7 +7,6 @@ from tqdm import tqdm
 img_name = 'mydata' #global call file name
 
 def ratio_distance(descriptor1, descriptor2):
-    # 計算自定義的 ratio distance
     return np.linalg.norm(descriptor1 - descriptor2) / (np.linalg.norm(descriptor1) + np.linalg.norm(descriptor2) + 1e-10)
 
 def match(descriptors1, descriptors2):
