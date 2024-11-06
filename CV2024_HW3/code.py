@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import random
 from tqdm import tqdm
 
+img_name = 'mydata' #global call file name
+
 def ratio_distance(descriptor1, descriptor2):
     # 計算自定義的 ratio distance
     return np.linalg.norm(descriptor1 - descriptor2) / (np.linalg.norm(descriptor1) + np.linalg.norm(descriptor2) + 1e-10)
@@ -14,6 +16,11 @@ def match(descriptors1, descriptors2):
     for li in enumerate(descriptors1):
         tmp.append(li)
     feature_size = li[0]
+    print(f'the feature number of descriptors1 is {li[0]}')
+    tmp = []
+    for li in enumerate(descriptors2):
+        tmp.append(li)
+    print(f'the feature number of descriptors2 is {li[0]}')
     print('start matching feature...')
     for bar, (i, desc1) in zip(tqdm(range(1, feature_size)), enumerate(descriptors1)):
         distances = np.array([ratio_distance(desc1, desc2) for desc2 in descriptors2])
@@ -28,29 +35,39 @@ def detect_and_match_features(img1, img2, feature='SIFT'):
     if feature == "SIFT":
         print("start run SIFT")
         detector = cv2.SIFT_create()
+        
         print("processing image1")
         keypoints1, descriptors1 = detector.detectAndCompute(img1, None)
+        
         print("processing image2")
         keypoints2, descriptors2 = detector.detectAndCompute(img2, None)
-        print("SIFT complete")
+        
+        print("processing complete")
+        
     elif feature=='MSER':
+        print("start run MSER")
         mser = cv2.MSER_create(min_area=20, max_area=14400)
-        keypoints1 = mser.detect(img1)
-        keypoints2 = mser.detect(img2)
-    
         sift = cv2.SIFT_create()
+        
+        print("processing image1")
+        keypoints1 = mser.detect(img1)
         keypoints1, descriptors1 = sift.compute(img1, keypoints1)
+        
+        print("processing image2")
+        keypoints2 = mser.detect(img2)
         keypoints2, descriptors2 = sift.compute(img2, keypoints2)
         
+        print("processing complete")
+        
     else:
-        raise ValueError(f"暫不支持{feature}方法，請選擇 'SIFT', 'MSER'。")
+        raise ValueError(f"暫不支持{feature}方法，請選擇 'SIFT'or 'MSER'。")
         
         
     #step 2
     
     matches = match(descriptors1, descriptors2)
     good_matches = [m for m, n in matches if m.distance < 0.75 * n.distance]
-    
+    print(f'the feature number that  is good matching is {len(good_matches)}')
     
     img_matches = cv2.drawMatches(img1, keypoints1, img2, keypoints2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     
@@ -60,6 +77,7 @@ def detect_and_match_features(img1, img2, feature='SIFT'):
     plt.title("Feature Matching")
     plt.axis("off")
     plt.show()
+    plt.imsave('out/' + feature + '_' + img_name + '_match.jpg', img_matches)
 
     return keypoints1, keypoints2, good_matches
 
@@ -168,12 +186,13 @@ def warp_and_stitch(img1, img2, H):
     return result.astype("uint8")
 
 
-img1 = cv2.imread('data/t1.jpg', cv2.COLOR_RGB2BGR)
-img2 = cv2.imread('data/t2.jpg', cv2.COLOR_RGB2BGR)
+img1 = cv2.imread('data/'+ img_name +'1.jpg', cv2.COLOR_RGB2BGR)
+img2 = cv2.imread('data/'+ img_name +'2.jpg', cv2.COLOR_RGB2BGR)
 
 features = ['SIFT', 'MSER']
+feature = features[1]
 # step 1,2
-keypoints1, keypoints2, good_matches = detect_and_match_features(img1, img2, features[0])
+keypoints1, keypoints2, good_matches = detect_and_match_features(img1, img2, feature)
 
 
 # step3
@@ -190,4 +209,4 @@ plt.imshow(result, cmap='gray')
 plt.axis('off')
 plt.title("Panoramic Stitching Result")
 plt.show()
-plt.imsave('myout1.jpg', result)
+plt.imsave('out/' + feature + '_'+ img_name +'_result.jpg', result)
