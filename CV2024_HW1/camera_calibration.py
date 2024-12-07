@@ -8,7 +8,7 @@ from PIL import Image
 # (8,6) is for the given testing images.
 # If you use the another data (e.g. pictures you take by your smartphone), 
 # you need to set the corresponding numbers.
-corner_x = 10
+corner_x = 7
 corner_y = 7
 objp = np.zeros((corner_x*corner_y,3), np.float32)
 objp[:,:2] = np.mgrid[0:corner_x, 0:corner_y].T.reshape(-1,2)
@@ -18,7 +18,7 @@ objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
-images = glob.glob('newdata/*.jpg')
+images = glob.glob('data/*.jpg')
 
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
@@ -55,71 +55,10 @@ img_size = img[0].shape
 # You need to comment these functions and write your calibration function from scratch.
 # Notice that rvecs is rotation vector, not the rotation matrix, and tvecs is translation vector.
 # In practice, you'll derive extrinsics matrixes directly. The shape must be [pts_num,3,4], and use them to plot.
-
-
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
 Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
-extrinsics_ch = []
-for idx in range(extrinsics.shape[0]):
-    tmp, _ = cv2.Rodrigues(extrinsics[idx,0:3])
-    extrinsics_ch.append(tmp)
-    
-#'''
-
-#------------------------------------------------
-# show the camera extrinsics
-print('Show the camera extrinsics')
-# plot setting
-# You can modify it for better visualization
-fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(111, projection='3d')
-# camera setting
-camera_matrix = mtx
-cam_width = 0.064/0.1
-cam_height = 0.032/0.1
-scale_focal = 1600
-# chess board setting
-board_width = 8
-board_height = 6
-square_size = 1
-# display
-# True -> fix board, moving cameras
-# False -> fix camera, moving boards
-points, min_values, max_values = show.draw_camera_boards(ax, camera_matrix, cam_width, cam_height,
-                                                scale_focal, extrinsics, board_width,
-                                                board_height, square_size, False)
-
-X_min = min_values[0]
-X_max = max_values[0]
-Y_min = min_values[1]
-Y_max = max_values[1]
-Z_min = min_values[2]
-Z_max = max_values[2]
-max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / 2.0
-
-mid_x = (X_max+X_min) * 0.5
-mid_y = (Y_max+Y_min) * 0.5
-mid_z = (Z_max+Z_min) * 0.5
-ax.set_xlim(mid_x - max_range, mid_x + max_range)
-ax.set_ylim(mid_y - max_range, mid_y + max_range)
-ax.set_zlim(mid_z - max_range, mid_z + max_range)
-
-ax.set_xlabel('x')
-ax.set_ylabel('z')
-ax.set_zlabel('-y')
-ax.set_title('Extrinsic Parameters Visualization')
-plt.show()
-
-mean_error = 0
-for i in range(len(objpoints)):
-    imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
-    error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
-    mean_error += error
- 
-print( "total error: {}".format(mean_error/len(objpoints)) )
-
 """
 Write your code here
 
@@ -127,7 +66,7 @@ objpoints (10, 49, 3)
 imgpoints (10, 49, 1, 2)
 """
 
-#%%%
+
 def compute_homography(objpoints, imgpoints):
     # reference https://medium.com/@shantanuparab99/homography-a690527f2e1b
     A = []
@@ -206,27 +145,28 @@ for objp, imgp in zip(objpoints, imgpoints):
 K = compute_intrinsic_matrix(H_list)
 
 # 3.Find out the extrinsics matrix of each images. 
-extrinsics2 = []
+extrinsics = []
 for H in H_list:
     extrinsic = compute_extrinsics(H, K)
-    extrinsics2.append(extrinsic)
+    extrinsics.append(extrinsic)
 
-extrinsics2 = np.array(extrinsics2)
-mtx2 = K
-extrinsics2_ch = []
-for idx in range(extrinsics2.shape[0]):
-    tmp = extrinsics2[idx,0:3,0:3]
-    extrinsics2_ch.append(tmp)
+extrinsics = np.array(extrinsics)
+mtx = K
+
+
 
 #------------------------------------------------
 # show the camera extrinsics
-print('Show the camera extrinsics2')
+print('Show the camera extrinsics')
+
+for i in extrinsics:
+    print(i)
 # plot setting
 # You can modify it for better visualization
-fig2 = plt.figure(figsize=(10, 10))
-ax2 = fig2.add_subplot(111, projection='3d')
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
 # camera setting
-camera_matrix2 = mtx2
+camera_matrix = mtx
 cam_width = 0.064/0.1
 cam_height = 0.032/0.1
 scale_focal = 1600
@@ -237,9 +177,9 @@ square_size = 1
 # display
 # True -> fix board, moving cameras
 # False -> fix camera, moving boards
-points2, min_values, max_values = show.draw_camera_boards(ax2, camera_matrix2, cam_width, cam_height,
-                                                scale_focal, extrinsics2, board_width,
-                                                board_height, square_size, False)
+min_values, max_values = show.draw_camera_boards(ax, camera_matrix, cam_width, cam_height,
+                                                scale_focal, extrinsics, board_width,
+                                                board_height, square_size, True)
 
 X_min = min_values[0]
 X_max = max_values[0]
@@ -252,16 +192,15 @@ max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / 2.0
 mid_x = (X_max+X_min) * 0.5
 mid_y = (Y_max+Y_min) * 0.5
 mid_z = (Z_max+Z_min) * 0.5
-ax2.set_xlim(mid_x - max_range, mid_x + max_range)
-ax2.set_ylim(mid_y - max_range, mid_y + max_range)
-ax2.set_zlim(mid_z - max_range, mid_z + max_range)
+ax.set_xlim(mid_x - max_range, mid_x + max_range)
+ax.set_ylim(mid_y - max_range, 0)
+ax.set_zlim(mid_z - max_range, mid_z + max_range)
 
-ax2.set_xlabel('x')
-ax2.set_ylabel('z')
-ax2.set_zlabel('-y')
-ax2.set_title('Extrinsic Parameters Visualization')
+ax.set_xlabel('x')
+ax.set_ylabel('z')
+ax.set_zlabel('-y')
+ax.set_title('Extrinsic Parameters Visualization')
 plt.show()
-
 
 #animation for rotating plot
 """
