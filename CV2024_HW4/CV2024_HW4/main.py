@@ -257,11 +257,13 @@ img1 = cv2.imread('./my_data/SantaHat1.jpg')
 img2 = cv2.imread('./my_data/SantaHat2.jpg')
 
 K1 = np.array([[2701.93, 0.000, 1538.21],
-               [0, 2738.09, 1960.13],
-               [0, 0, 1]])
+                [0, 2738.09, 1960.13],
+                [0, 0, 1]])
 K2 = np.array([[2701.93, 0.000, 1538.21],
-               [0, 2738.09, 1960.13],
-               [0, 0, 1]])
+                [0, 2738.09, 1960.13],
+                [0, 0, 1]])
+
+
 
 src_pts, dst_pts, good_matches = detect_and_match_features(img1, img2)
 F, inlier_pts1, inlier_pts2 = compute_fundamental_matrix(src_pts, dst_pts)

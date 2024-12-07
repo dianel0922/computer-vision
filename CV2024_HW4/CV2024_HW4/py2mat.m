@@ -1,6 +1,6 @@
 %記得改path
 dataPath = './output/SantaHat/'; 
-img_path = './my_data'; %data/mydata
+img_path = './my_data'; % data or mydata
 img_name = {'Mesona1.JPG'; 
             'Mesona2.JPG'; 
             'Statue1.bmp'; 
