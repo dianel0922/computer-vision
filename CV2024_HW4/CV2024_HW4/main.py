@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import random
 
 
-### Step 1 X
+
 def detect_and_match_features(img1, img2, ratio_thresh=0.75):
     # gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     # gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
@@ -34,7 +34,7 @@ def detect_and_match_features(img1, img2, ratio_thresh=0.75):
     
     return src_pts, dst_pts, good_matches
 
-### Step 2 X
+
 def normalize_points(points):
     mean = np.mean(points, axis=0)
     rms = np.sqrt(np.mean(np.linalg.norm(points - mean, axis=1) ** 2))
@@ -93,7 +93,7 @@ def compute_fundamental_matrix(src_pts, dst_pts, ransac_iters=1000, threshold=0.
 
     return best_F, inlier_pts1, inlier_pts2
 
-### Step 3: X
+
 
 def compute_epilines(points, F, which_image):
     
@@ -124,13 +124,13 @@ def draw_epilines(img1, img2, pts1, pts2, F):
 
     return img1_copy, img2_copy
 
-### Step 4: X
+
 def compute_essential_matrix(F, K1, K2):
     E = K1.T @ F @ K2
 
     return E
 
-### Step 5: X
+
 def extract_projection_matrices(E):
     U, _, Vt = np.linalg.svd(E)
     W = np.array([[0, -1, 0],
@@ -153,7 +153,7 @@ def extract_projection_matrices(E):
 
     return [P1, P2, P3, P4]
 
-### Step 6: 
+
 def triangulate_point(P1, P2, pt1, pt2):
     
     A = np.zeros((4, 4))
@@ -200,7 +200,6 @@ def select_best_projection(P_list, pts1, pts2, K1, K2):
 
 
 
-### Step 7: 
 def triangulate_and_visualize(best_P, pts1, pts2, K1, K2):
     P0 = K1 @ np.hstack((np.eye(3), np.zeros((3, 1))))
     P1 = K2 @ best_P
@@ -245,15 +244,24 @@ def triangulate_and_visualize(best_P, pts1, pts2, K1, K2):
 #               [0, 1.4219, 0.3802],
 #               [0, 0, 0.001]])
 
-img1 = cv2.imread('./data/Statue1.bmp')
-img2 = cv2.imread('./data/Statue2.bmp')
-K1 = np.array([[5426.566895, 0.678017, 330.096680],
-              [0, 5423.133301, 648.950012],
-              [0, 0, 1.000000]])
-K2 = np.array([[5426.566895, 0.678017, 387.430023],
-              [0, 5423.133301, 620.616699],
-              [0, 0, 1.000000]])
+# img1 = cv2.imread('./data/Statue1.bmp')
+# img2 = cv2.imread('./data/Statue2.bmp')
+# K1 = np.array([[5426.566895, 0.678017, 330.096680],
+#               [0, 5423.133301, 648.950012],
+#               [0, 0, 1.000000]])
+# K2 = np.array([[5426.566895, 0.678017, 387.430023],
+#               [0, 5423.133301, 620.616699],
+#               [0, 0, 1.000000]])
 
+img1 = cv2.imread('./my_data/SantaHat1.jpg')
+img2 = cv2.imread('./my_data/SantaHat2.jpg')
+
+K1 = np.array([[2701.93, 0.000, 1538.21],
+               [0, 2738.09, 1960.13],
+               [0, 0, 1]])
+K2 = np.array([[2701.93, 0.000, 1538.21],
+               [0, 2738.09, 1960.13],
+               [0, 0, 1]])
 
 src_pts, dst_pts, good_matches = detect_and_match_features(img1, img2)
 F, inlier_pts1, inlier_pts2 = compute_fundamental_matrix(src_pts, dst_pts)
@@ -280,8 +288,10 @@ points_3d = triangulate_and_visualize(best_P, inlier_pts1, inlier_pts2, K1, K2)
 
 
 print(f'3d size: {len(points_3d)}, 2d size: {len(inlier_pts1)}')
-#folder = 'Mesona'
-folder = 'Statue'
+# folder = 'Mesona'
+# folder = 'Statue'
+folder = 'SantaHat'
+
 np.savetxt('./output/' + folder + '/points_3d.txt', points_3d, delimiter=',')
 np.savetxt('./output/' + folder + '/points_2d.txt', inlier_pts1, delimiter=',')
 np.savetxt('./output/' + folder + '/camera_matrix1.txt', K1, delimiter=',')

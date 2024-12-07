@@ -18,7 +18,7 @@ objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
-images = glob.glob('data/*.jpg')
+images = glob.glob('newdata/*.jpg')
 
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
@@ -163,44 +163,44 @@ for i in extrinsics:
     print(i)
 # plot setting
 # You can modify it for better visualization
-fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(111, projection='3d')
-# camera setting
-camera_matrix = mtx
-cam_width = 0.064/0.1
-cam_height = 0.032/0.1
-scale_focal = 1600
-# chess board setting
-board_width = 8
-board_height = 6
-square_size = 1
-# display
-# True -> fix board, moving cameras
-# False -> fix camera, moving boards
-min_values, max_values = show.draw_camera_boards(ax, camera_matrix, cam_width, cam_height,
-                                                scale_focal, extrinsics, board_width,
-                                                board_height, square_size, True)
+# fig = plt.figure(figsize=(10, 10))
+# ax = fig.add_subplot(111, projection='3d')
+# # camera setting
+# camera_matrix = mtx
+# cam_width = 0.064/0.1
+# cam_height = 0.032/0.1
+# scale_focal = 1600
+# # chess board setting
+# board_width = 8
+# board_height = 6
+# square_size = 1
+# # display
+# # True -> fix board, moving cameras
+# # False -> fix camera, moving boards
+# min_values, max_values = show.draw_camera_boards(ax, camera_matrix, cam_width, cam_height,
+#                                                 scale_focal, extrinsics, board_width,
+#                                                 board_height, square_size, True)
 
-X_min = min_values[0]
-X_max = max_values[0]
-Y_min = min_values[1]
-Y_max = max_values[1]
-Z_min = min_values[2]
-Z_max = max_values[2]
-max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / 2.0
+# X_min = min_values[0]
+# X_max = max_values[0]
+# Y_min = min_values[1]
+# Y_max = max_values[1]
+# Z_min = min_values[2]
+# Z_max = max_values[2]
+# max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / 2.0
 
-mid_x = (X_max+X_min) * 0.5
-mid_y = (Y_max+Y_min) * 0.5
-mid_z = (Z_max+Z_min) * 0.5
-ax.set_xlim(mid_x - max_range, mid_x + max_range)
-ax.set_ylim(mid_y - max_range, 0)
-ax.set_zlim(mid_z - max_range, mid_z + max_range)
+# mid_x = (X_max+X_min) * 0.5
+# mid_y = (Y_max+Y_min) * 0.5
+# mid_z = (Z_max+Z_min) * 0.5
+# ax.set_xlim(mid_x - max_range, mid_x + max_range)
+# ax.set_ylim(mid_y - max_range, 0)
+# ax.set_zlim(mid_z - max_range, mid_z + max_range)
 
-ax.set_xlabel('x')
-ax.set_ylabel('z')
-ax.set_zlabel('-y')
-ax.set_title('Extrinsic Parameters Visualization')
-plt.show()
+# ax.set_xlabel('x')
+# ax.set_ylabel('z')
+# ax.set_zlabel('-y')
+# ax.set_title('Extrinsic Parameters Visualization')
+# plt.show()
 
 #animation for rotating plot
 """
