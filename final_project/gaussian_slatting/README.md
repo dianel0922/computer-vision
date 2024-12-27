@@ -20,7 +20,7 @@ This is the sofware dependencies you will need installed prior to installing the
 cmd order
 ```shell
 env_setting.bat <3dgs_root_parent>
-run_3dgs.bat <3dgs_root> <image_directory> <viewer_root>
+run_3dgs.bat <3dgs_root> <image_directory> <viewers_root>
 ```
 for example
 
@@ -28,3 +28,29 @@ for example
 env_setting.bat C:/
 run_3dgs.bat C:/gaussian-splatting/ ./data/fern/ ./viewers/
 ```
+
+## View Result
+```shell
+cd <viewers_root>/bin
+SIBR_gaussianViewer_app.exe -m <path-to-output>/output/folder-name
+```
+the output folder will look like
+```
+output
+|---folder-name 
+   │  cameras.json
+   │  cfg_args
+   │  exposure.json
+   │  input.ply
+   │
+   |---point_cloud
+       |---iteration_30000
+       │      point_cloud.ply
+       │
+       |---iteration_7000
+              point_cloud.ply
+```
+or you can use any software that can preview point cloud 
+
+> NOTE: \
+> You should import all the file above to you software otherwise you will loss info  
