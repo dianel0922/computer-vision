@@ -2,7 +2,7 @@
 This is the hardware and software required to run 3D Gaussian Splatting for Real-Time Radiance Fields. Technically, the viewer has much smaller requirements compared to the the optimizer. I decided to list the 
 
 ### Hardware
-- An NVIDIA GPU with 24GB VRAM* or more. Preferably an RTX 3090 or better. _*Future updates to these instructions will have options to modify training for GPUs with less VRAM such as a 3080._
+- An NVIDIA GPU with 24GB VRAM* or more. Preferably an RTX 3080 or better. 
 
 ### Software
 This is the sofware dependencies you will need installed prior to installing the project. Many of these dependencies are shared with other NeRF projects.

@@ -46,7 +46,7 @@ colmap mapper --database_path "data\%fname%\database.db" --image_path "data\%fna
 colmap model_converter --input_path "data\%fname%\sparse\0" --output_path "data\%fname%\sparse\0" --output_type BIN
 
 :: Run the training script
-python train.py -s "data\%fname%"
+python train.py -s "%gs_root%\data\%fname%"
 
 :: Find the most recently modified folder in the output directory (newest one)
 for /f "delims=" %%i in ('dir "%gs_root%\output" /b /ad /o-d') do (
